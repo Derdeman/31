@@ -1,1 +1,467 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>11. Sınıf Sosyoloji Akıllı Öğrenme ve Sınav Merkezi</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --success-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --light-bg: #f5f6fa;
+            --accent-color: #9b59b6;
+        }
 
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light-bg);
+            color: #2c3e50;
+        }
+
+        header {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-title { margin: 0; font-size: 1.4rem; }
+
+        .nav-links {
+            display: flex;
+            gap: 12px;
+        }
+
+        .nav-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .admin-toggle-btn {
+            background-color: #e67e22;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 25px;
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                grid-template-columns: 350px 1fr;
+            }
+            .full-width {
+                grid-column: 1 / -1;
+            }
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+            height: fit-content;
+        }
+
+        /* Konu Anlatım Bölümü */
+        .lectures-sidebar {
+            max-height: 80vh;
+            overflow-y: auto;
+            position: sticky;
+            top: 20px;
+        }
+
+        .lecture-topic {
+            margin-bottom: 15px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-left: 4px solid var(--accent-color);
+            border-radius: 4px;
+        }
+
+        .lecture-topic h4 {
+            margin: 0 0 8px 0;
+            color: var(--secondary-color);
+        }
+
+        .lecture-topic p {
+            margin: 0;
+            font-size: 0.92rem;
+            line-height: 1.4;
+            color: #555;
+        }
+
+        /* Soru Yapısı */
+        .question-block {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px dashed #f1f2f6;
+        }
+
+        .question-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 10px 12px;
+            background: #f8f9fa;
+            margin: 6px 0;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid #edf2f7;
+            transition: 0.2s;
+        }
+
+        .option-label:hover {
+            background: #edf2f7;
+        }
+
+        .option-label input {
+            margin-right: 10px;
+        }
+
+        .ai-box {
+            background: #ebf8ff;
+            border-left: 6px solid var(--primary-color);
+            padding: 20px;
+            border-radius: 6px;
+            display: none;
+            margin-top: 25px;
+        }
+
+        #admin-panel { display: none; background: #fffaf0; border: 2px dashed #e67e22; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 6px; box-sizing: border-box;
+        }
+
+        .btn {
+            background-color: var(--success-color);
+            color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: bold;
+        }
+        .btn-primary { background-color: var(--primary-color); }
+        #admin-auth { display: none; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 class="nav-title">📐 Sosyoloji Sınav Hazırlık Ekranı</h1>
+        <div class="nav-links" id="test-menusu">
+            </div>
+        <button class="admin-toggle-btn" onclick="toggleAdminGiris()">Admin Paneli</button>
+    </header>
+
+    <div class="container">
+
+        <div id="admin-auth" class="card full-width">
+            <h3>Admin Girişi</h3>
+            <div class="form-group"><label>Kullanıcı Adı:</label><input type="text" id="admin-user"></div>
+            <div class="form-group"><label>Şifre:</label><input type="password" id="admin-pass"></div>
+            <button class="btn btn-primary" onclick="adminGirisYap()">Giriş Yap</button>
+        </div>
+
+        <div id="admin-panel" class="card full-width">
+            <h2>⚙️ Soru ve Konu Anlatım Yükleme Alanı</h2>
+            <div class="form-group">
+                <label>Test Grubu:</label>
+                <select id="add-target-test">
+                    <option value="Test 1">Test 1 (İlk 10 Soru)</option>
+                    <option value="Test 2">Test 2 (İkinci 10 Soru)</option>
+                    <option value="Test 3">Test 3 (Üçüncü 10 Soru)</option>
+                </select>
+            </div>
+            <div class="form-group"><label>Konu Adı:</label><input type="text" id="add-sub-konu"></div>
+            <div class="form-group"><label>Soru:</label><textarea id="add-sub-soru" rows="2"></textarea></div>
+            <div class="form-group"><label>A Şıkkı:</label><input type="text" id="opt-a"></div>
+            <div class="form-group"><label>B Şıkkı:</label><input type="text" id="opt-b"></div>
+            <div class="form-group"><label>C Şıkkı:</label><input type="text" id="opt-c"></div>
+            <div class="form-group"><label>D Şıkkı:</label><input type="text" id="opt-d"></div>
+            <div class="form-group">
+                <label>Doğru Şık:</label>
+                <select id="correct-opt"><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select>
+            </div>
+            <div class="form-group"><label>Öğrenciye Özel Yapay Zeka Notu:</label><textarea id="add-sub-anlatim" rows="3"></textarea></div>
+            <button class="btn" onclick="yeniSoruKaydet()">Sisteme Kaydet</button>
+            <button class="btn" style="background:#7f8c8d" onclick="adminCikis()">Kapat</button>
+        </div>
+
+        <div class="card lectures-sidebar">
+            <h3 style="color:var(--accent-color); margin-top:0; border-bottom:2px solid #eee; padding-bottom:10px;">📖 Sınav Konu Anlatım Özetleri</h3>
+            
+            <div class="lecture-topic">
+                <h4>1. Statü ve Saygınlık Farkı</h4>
+                <p><strong>Statü:</strong> Toplumdaki makam ve pozisyondur (Müdür, işçi, baba, doktor). <strong>Saygınlık (Prestij):</strong> O statünün hakkını vererek toplumun sevgisini ve takdirini kazanmaktır. Statü koltuktur, saygınlık koltuğu doldurmaktır.</p>
+            </div>
+
+            <div class="lecture-topic">
+                <h4>2. Toplumsal Hareketlilik</h4>
+                <p>Bireylerin sınıflar arası geçişidir. <strong>Dikey Hareketlilik:</strong> Sınıf değiştirmektir. İşçiyken azimle çalışıp kendi şirketini kurup patron (firma sahibi) olmak <strong>Yukarı Doğru Dikey Hareketliliktir</strong>. <strong>Yatay Hareketlilik:</strong> Sınıf değiştirmeden sadece yer değiştirmektir (Örn: Bir bakkalın dükkanını başka mahalleye taşıması).</p>
+            </div>
+
+            <div class="lecture-topic">
+                <h4>3. Toplumsal Etkileşim Tipleri</h4>
+                <p><strong>İş Birliği:</strong> Ortak amaç için birlikte çalışmak. <strong>Rekabet:</strong> Kurallara uyarak yarışmak. <strong>Çatışma:</strong> Kuralları yıkarak rakibi yok etmeye çalışmak. <strong>Mübadele:</strong> Çıkar odaklı karşılıklı alışveriş. <strong>Baskı:</strong> Tehditle bir şeyi yaptırmak. <strong>Asimilasyon:</strong> Başka kültürde eriyip gitmek.</p>
+            </div>
+
+            <div class="lecture-topic">
+                <h4>4. Toplumsal Bütünleşme</h4>
+                <p>Toplumu oluşturan kurumların, kuralların ve insanların bir uyum içinde, bölünmeden, kenetlenmiş olarak yaşaması durumudur. Adaletin bittiği yerde bütünleşme bozulur ve kuralsızlık (<strong>Anomi</strong>) başlar.</p>
+            </div>
+
+            <div class="lecture-topic">
+                <h4>5. Sosyolojinin Yöntem ve Teknikleri</h4>
+                <p><strong>Tümevarım:</strong> Parçalardan/örneklerden yola çıkıp genel yasaya varmak. <strong>Tümdengelim:</strong> Genel yasadan özele inmek. <strong>Monografi:</strong> Küçük bir grubu (Örn: tek bir suç çetesini) mikroskobik olarak çok derinden incelemek. <strong>Katılımlı Gözlem:</strong> Araştırmacının grubun içine ajan gibi girip onlarla yaşaması.</p>
+            </div>
+
+            <div class="lecture-topic">
+                <h4>6. Kültür ve Ailenin Sosyalleşmeye Etkisi</h4>
+                <p><strong>Sosyalleşme:</strong> Toplumun kurallarını bebeklikten itibaren öğrenme sürecidir. <strong>Aile:</strong> Sosyalleşmenin başladığı ilk, birincil ve en kalıcı yerdir. Dil, ahlak ve karakter burada kurulur. <strong>Kültür:</strong> Topluma kimlik kazandırır, bağları güçlü tutar.</p>
+            </div>
+        </div>
+
+        <div>
+            <div class="card">
+                <h2 id="aktif-test-adi" style="margin-top:0;">Yükleniyor...</h2>
+                <div id="soru-havuzu"></div>
+                <button class="btn btn-primary" id="testi-bitir-btn" style="display:none; width:100%;" onclick="testiDeğerlendir()">Testi Bitir ve Yapay Zeka Analizini Gör</button>
+            </div>
+
+            <div id="ai-analiz-alani" class="ai-box">
+                <h3>🤖 Yapay Zeka Akıllı Öğretmen Analizi</h3>
+                <p id="ai-performans-mesaji"></p>
+                <hr style="border: 0; border-top: 1px solid #bee3f8; margin: 15px 0;">
+                <h4>💡 Yanlış Yaptığın Soruların Anlatımları (Burayı İyi Oku!):</h4>
+                <div id="ai-konu-anlatimlari"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // 3 Test x 10 Soru = 30 Soru Veritabanı
+        let veritabanı = JSON.parse(localStorage.getItem('sosyoloji_son_db')) || {
+            testler: ["Test 1", "Test 2", "Test 3"],
+            sorular: [
+                // TEST 1
+                { test: "Test 1", konu: "Statü ve Saygınlık Farkı", soru: "Toplumda sahip olunan makam, konum veya basamağa ne ad verilir?", A: "Rol", B: "Sınıf", C: "Statü", D: "Saygınlık", dogru: "C", anlatim: "Statü, bireyin toplum içindeki pozisyonudur (Örn: Öğretmen, müdür). O pozisyonun içini iyi doldurmak ise saygınlıktır." },
+                { test: "Test 1", konu: "Statü ve Saygınlık Farkı", soru: "Bir öğretmenin derslerini çok iyi anlatmasıyla toplumda uyandırdığı takdir duygusuna ne denir?", A: "Prestij (Saygınlık)", B: "Rol Çatışması", C: "Doğuştan Statü", D: "Toplumsal Norm", dogru: "A", anlatim: "Saygınlık (Prestij), statünün getirdiği sorumlulukları başarıyla yerine getirince kazanılan değerdir." },
+                { test: "Test 1", konu: "Toplumsal Hareketlilik", soru: "Bir mağazada çalışan bir tezgahtarın zamanla kendi ürününü ihraç eden bir firma sahibi olması hangi kavramla açıklanır?", A: "Yatay Hareketlilik", B: "Yukarı Doğru Dikey Hareketlilik", C: "Aşağı Doğru Dikey Hareketlilik", D: "Coğrafi Hareketlilik", dogru: "B", anlatim: "Bireyin gelir ve yaşam standardı olarak tamamen sınıf atlaması, alt tabakadan üste geçmesi 'Yukarı Doğru Dikey Hareketlilik'tir." },
+                { test: "Test 1", konu: "Toplumsal Etkileşim Tipleri", soru: "İki büyük şirketin ortak bir proje üretmek adına güçlerini birleştirmesi hangi etkileşimdir?", A: "Çatışma", B: "Rekabet", C: "İş Birliği", D: "Baskı", dogru: "C", anlatim: "Ortak bir amaca ulaşmak için birden fazla kişinin veya grubun birlikte hareket etmesi İş Birliğidir." },
+                { test: "Test 1", konu: "Toplumsal Bütünleşme", soru: "Farklı toplumsal ögelerin, kurumların ve kuralların uyum içinde kenetlenmesine ne ad verilir?", A: "Bütünleşme", B: "Çatışma", C: "Anomi", D: "Sosyalleşme", dogru: "A", anlatim: "Toplumsal bütünleşme, yapıyı oluşturan tüm parçaların birbirini destekleyerek düzen oluşturması halidir." },
+                { test: "Test 1", konu: "Kültürün Önemi", soru: "Kültürün toplumlar için en temel hayati önemi aşağıdakilerden hangisidir?", A: "Maddi gelirleri eşitlemek", B: "Topluma ortak bir kimlik ve bağ kazandırmak", C: "Kanunları ortadan kaldırmak", D: "Sınıfsal yapıyı yok etmek", dogru: "B", anlatim: "Kültür, bir toplumu bir arada tutan çimentodur. İnsanlara ortak kimlik ve geçmiş duygusu katar." },
+                { test: "Test 1", konu: "Ailenin Sosyalleşmeye Etkisi", soru: "Çocuğun toplumsal kuralları, dili ve değerleri öğrendiği ilk ve birincil sosyalleşme kurumu hangisidir?", A: "Okul", B: "Medya", C: "Arkadaş Grubu", D: "Aile", dogru: "D", anlatim: "Aile, sosyalleşmenin temel harcının atıldığı, çocuğun dünyayı ilk öğrendiği en önemli birincil kurumdur." },
+                { test: "Test 1", konu: "Sosyolojinin Yöntem ve Teknikleri", soru: "Özel durumlardan ve tekil gözlemlerden yola çıkarak genel yasalara ulaşma yöntemine ne denir?", A: "Tümdengelim", B: "Tümevarım", C: "Monografi", D: "Anket", dogru: "B", anlatim: "Özelden (parçalardan) yola çıkıp genele (bütüne) varma işine Tümevarım denir." },
+                { test: "Test 1", konu: "Sosyolojinin Yöntem ve Teknikleri", soru: "Küçük ve sınırları belirli bir grubu mikroskobik olarak her yönüyle çok derinden inceleyen teknik hangisidir?", A: "Anket", B: "Mülakat", C: "Monografi", D: "Gözlem", dogru: "C", anlatim: "Monografi, dar çerçeveli bir konuyu veya grubu derinlemesine, adeta büyüteç altına alarak incelemektir." },
+                { test: "Test 1", konu: "Sosyolojinin Yöntem ve Teknikleri", soru: "Bir araştırmacının kimliğini gizleyerek bir fabrikanın içine işçi olarak girip gözlem yapması nedir?", A: "Katılımlı Gözlem", B: "Katılımsız Gözlem", C: "Anket", D: "İstatistik", dogru: "A", anlatim: "Araştırmacının incelediği grubun doğrudan içine sızıp onlarla yaşaması Katılımlı Gözlemdir." },
+
+                // TEST 2
+                { test: "Test 2", konu: "Toplumsal Etkileşim Tipleri", soru: "Önceden belirlenmiş ortak kurallar çerçevesinde bir ödül için yarışmaya ne ad verilir?", A: "Çatışma", B: "Rekabet", C: "Baskı", D: "Uyum", dogru: "B", anlatim: "Rekabet, kurallara bağlı kalarak başkalarıyla ödül için yarışma durumudur." },
+                { test: "Test 2", konu: "Toplumsal Etkileşim Tipleri", soru: "Sosyal ilişkilerde karşılıklı fayda ve çıkar beklentisiyle yapılan gönüllü ilişki biçimi hangisidir?", A: "Mübadele", B: "Asimilasyon", C: "Baskı", D: "Çatışma", dogru: "A", anlatim: "Mübadele, tarafların karşılıklı fayda sağlamak amacıyla yürüttüğü sosyal alışveriş tipidir." },
+                { test: "Test 2", konu: "Toplumsal Hareketlilik", soru: "Ankara'daki bir lise öğretmeninin İzmir'deki başka bir liseye atanması ne tür bir hareketliliktir?", A: "Dikey Hareketlilik", B: "Yatay Hareketlilik", C: "Aşağı Hareketlilik", D: "Sınıf Atlama", dogru: "B", anlatim: "Kişinin sosyal sınıfı, geliri ve prestiji değişmeden sadece coğrafi yer değiştirmesi Yatay Hareketliliktir." },
+                { test: "Test 2", konu: "Statü ve Saygınlık Farkı", soru: "Bireyin hiçbir çabası olmadan doğuştan getirdiği cinsiyet, ırk gibi statülere ne ad verilir?", A: "Kazanılmış Statü", B: "Verilmiş (Doğuştan) Statü", C: "Anahtar Statü", D: "Aktif Statü", dogru: "B", anlatim: "Kişinin kendi emeği olmadan, biyolojik veya kalıtsal yolla gelen statülere verilmiş statü denir." },
+                { test: "Test 2", konu: "Statü ve Saygınlık Farkı", soru: "Bireyin kendi eğitimi, çalışması ve azmiyle sonradan elde ettiği statülere ne ad verilir?", A: "Kazanılmış Statü", B: "Verilmiş Statü", C: "Pasif Statü", D: "Rol Çatışması", dogru: "A", anlatim: "Bireyin kendi iradesiyle kazandığı konumlardır (Örn: Sınavı kazanıp Avukat olmak)." },
+                { test: "Test 2", konu: "Ailenin Sosyalleşmeye Etkisi", soru: "Doğumdan ölüme kadar toplumun norm ve kültürünü içselleştirme sürecinin genel adı nedir?", A: "Sosyalleşme", B: "Küreselleşme", C: "Hareketlilik", D: "Bütünleşme", dogru: "A", anlatim: "Bireyin topluma uyumlu bir üye haline gelmek için geçirdiği ömür boyu süren öğrenme süreci sosyalleşmedir." },
+                { test: "Test 2", konu: "Kültürün Önemi", soru: "Kültürün nesiller boyu taşınmasını sağlayan en güçlü sembolik aracı hangisidir?", A: "Para", B: "Dil", C: "Teknoloji", D: "Mimari", dogru: "B", anlatim: "Dil, kültürün hafızasıdır. Dil olmasaydı kültür geleceğe aktarılamazdı." },
+                { test: "Test 2", konu: "Sosyolojinin Yöntem ve Teknikleri", soru: "Genel teorilerden veya yasalardan yola çıkarak özel durumları açıklama yöntemine ne denir?", A: "Tümevarım", B: "Tümdengelim", C: "Monografi", D: "Mülakat", dogru: "B", anlatim: "Bütünden (genelden) parçaya (özele) doğru inen mantıksal akıl yürütme Tümdengelimdir." },
+                { test: "Test 2", konu: "Toplumsal Bütünleşme", soru: "Toplumsal normların bağlayıcılığını yitirmesiyle ortaya çıkan kuralsızlık ve kaos haline ne denir?", A: "Anomi", B: "Bütünleşme", C: "Uyum", D: "İş Birliği", dogru: "A", anlatim: "Anomi, kuralların yıkılması, toplumsal değerlerin bireyleri yönlendirememesi yani normsuzluk durumudur." },
+                { test: "Test 2", konu: "Toplumsal Etkileşim Tipleri", soru: "Fiziki güç, tehdit veya otorite zoruyla birine istemediği bir şeyi yaptırma etkileşimi hangisidir?", A: "Uyum", B: "Baskı (Zorlama)", C: "Mübadele", D: "Rekabet", dogru: "B", anlatim: "Baskı, bir iradenin başka bir iradeyi zor kullanarak boyun eğdirmesidir." },
+
+                // TEST 3
+                { test: "Test 3", konu: "Toplumsal Hareketlilik", soru: "Büyük bir şirketin sahibiyken iflas edip bir fabrikada asgari ücretle işçi olmak hangisine örnektir?", A: "Yukarı Doğru Dikey Hareketlilik", B: "Aşağı Doğru Dikey Hareketlilik", C: "Yatay Hareketlilik", D: "Coğrafi Göç", dogru: "B", anlatim: "Ekonomik ve sosyal statü kaybıyla üst tabakadan alt tabakaya düşüş Aşağı Doğru Dikey Hareketliliktir." },
+                { test: "Test 3", konu: "Toplumsal Etkileşim Tipleri", soru: "Bir göçmen topluluğun, içine girdiği egemen kültürde eriyip kendi kimliğini unutması durumuna ne denir?", A: "İş Birliği", B: "Asimilasyon (Benzeştirme)", C: "Rekabet", D: "Çatışma", dogru: "B", anlatim: "Asimilasyon, azınlık grupların baskın kültür içinde kendi özelliklerini yitirerek ona benzemesidir." },
+                { test: "Test 3", konu: "Statü ve Saygınlık Farkı", soru: "Bireyin sahip olduğu birçok statü arasında toplumda en baskın olan ve onu tanımlayan ana statüye ne denir?", A: "Anahtar Statü", B: "Geçici Statü", C: "Verilmiş Statü", D: "Rol Çatışması", dogru: "A", anlatim: "Kişinin toplumdaki en belirgin, vitrin konumudur (Örn: Birinin her şeyden önce 'Vali' olarak bilinmesi)." },
+                { test: "Test 3", konu: "Ailenin Sosyalleşmeye Etkisi", soru: "Aşağıdakilerden hangisi bireyin hayatının ilerleyen dönemlerinde girdiği 'ikincil' sosyalleşme kurumudur?", A: "Aile", B: "Çekirdek Aile", C: "Okul", D: "Akraba Çevresi", dogru: "C", anlatim: "Okul, iş yeri, sendika gibi resmi yapılar ikincil sosyalleşme alanlarıdır. Aile ise birincildir." },
+                { test: "Test 3", konu: "Kültürün Önemi", soru: "Kültürün binalar, yollar, araç-gereçler ve teknolojik aletler gibi somut yapısına ne ad verilir?", A: "Manevi Kültür", B: "Maddi Kültür", C: "Alt Kültür", D: "Karşı Kültür", dogru: "B", anlatim: "İnsan eliyle yapılan her türlü fiziksel, somut nesne Maddi Kültür unsurudur." },
+                { test: "Test 3", konu: "Sosyolojinin Yöntem ve Teknikleri", soru: "Geniş insan kitlelerinin standart sorularla eğilimlerini ve fikirlerini ölçen istatistiksel teknik hangisidir?", A: "Anket", B: "Monografi", C: "Katılımlı Gözlem", D: "Mülakat", dogru: "A", anlatim: "Çok sayıda insandan hızlı, yüzeysel ve sayısal veri toplamanın en klasik yolu Ankettir." },
+                { test: "Test 3", konu: "Toplumsal Bütünleşme", soru: "Toplumsal bütünleşmeyi en hızlı dinamitleyen, koparan olumsuz durum hangisidir?", A: "Ortak bayramlar kutlamak", B: "Adalet mekanizmasının ve güvenin çökmesi", C: "Eğitim kalitesinin yükselmesi", D: "Kültürel mirasın korunması", dogru: "B", anlatim: "Bir toplumda adalet duygusu sarsılırsa insanlar arasındaki güven bağı kopar ve bütünleşme yok olur." },
+                { test: "Test 3", konu: "Sosyolojinin Yöntem ve Teknikleri", soru: "Sosyoloji kelimesini ilk kullanan ve sosyolojinin kurucusu kabul edilen isim kimdir?", A: "Karl Marx", B: "Auguste Comte", C: "Max Weber", D: "İbn-i Haldun", dogru: "B", anlatim: "Sosyoloji kelimesini literatüre sokan ve pozitif bir bilim dalı olarak kuran kişi Auguste Comte'tur." },
+                { test: "Test 3", konu: "Toplumsal Etkileşim Tipleri", soru: "Kuralları tamamen yok sayarak rakibi ezmeye, engellemeye veya ortadan kaldırmaya odaklı sert mücadele nedir?", A: "Çatışma", B: "Rekabet", C: "Uyum", D: "Mübadele", dogru: "A", anlatim: "Çatışmada kurallar rafa kalkabilir, ana amaç karşı tarafı doğrudan saf dışı bırakıp alt etmektir." },
+                { test: "Test 3", konu: "Statü ve Saygınlık Farkı", soru: "Bir kadının aynı anda hem hakim hem anne olması durumunda, rollerin zaman veya zihin olarak çelişmesine ne denir?", A: "Rol Pekişmesi", B: "Rol Çatışması", C: "Anahtar Rol", D: "Statü Kaybı", dogru: "B", anlatim: "Bireyin sahip olduğu iki farklı statünün gerektirdiği rollerin birbirini zorlaştırması durumuna Rol Çatışması denir." }
+            ]
+        };
+
+        let aktifTest = "Test 1";
+        let adminYandimi = false;
+
+        function baslat() {
+            renderMenuler();
+            renderSorular(aktifTest);
+        }
+
+        function renderMenuler() {
+            const menu = document.getElementById('test-menusu');
+            menu.innerHTML = '';
+            veritabanı.testler.forEach(t => {
+                const btn = document.createElement('button');
+                btn.className = `nav-btn ${t === aktifTest ? 'active' : ''}`;
+                btn.innerText = `${t}`;
+                btn.onclick = () => {
+                    aktifTest = t;
+                    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    renderSorular(t);
+                };
+                menu.appendChild(btn);
+            });
+        }
+
+        function renderSorular(testAdi) {
+            document.getElementById('aktif-test-adi').innerText = `${testAdi} Sınav Alanı (10 Soru)`;
+            const havuz = document.getElementById('soru-havuzu');
+            havuz.innerHTML = '';
+            document.getElementById('ai-analiz-alani').style.display = "none";
+
+            const liste = veritabanı.sorular.filter(s => s.test === testAdi);
+
+            if(liste.length === 0) {
+                havuz.innerHTML = '<p>Bu teste henüz soru eklenmemiş.</p>';
+                document.getElementById('testi-bitir-btn').style.display = "none";
+                return;
+            }
+
+            liste.forEach((s, idx) => {
+                const qDiv = document.createElement('div');
+                qDiv.className = 'question-block';
+                qDiv.setAttribute('data-konu', s.konu);
+                qDiv.setAttribute('data-dogru', s.dogru);
+
+                qDiv.innerHTML = `
+                    <p class="question-title"><strong>Soru ${idx+1}:</strong> ${s.soru}</p>
+                    <label class="option-label"><input type="radio" name="secim_${idx}" value="A"> A) ${s.A}</label>
+                    <label class="option-label"><input type="radio" name="secim_${idx}" value="B"> B) ${s.B}</label>
+                    <label class="option-label"><input type="radio" name="secim_${idx}" value="C"> C) ${s.C}</label>
+                    <label class="option-label"><input type="radio" name="secim_${idx}" value="D"> D) ${s.D}</label>
+                `;
+                havuz.appendChild(qDiv);
+            });
+            document.getElementById('testi-bitir-btn').style.display = "block";
+        }
+
+        function testiDeğerlendir() {
+            const bloklar = document.querySelectorAll('.question-block');
+            let dogru = 0; let yanlis = 0;
+            let eksikler = [];
+
+            bloklar.forEach((b, idx) => {
+                const secili = b.querySelector(`input[name="secim_${idx}"]:checked`);
+                const dogruCevap = b.getAttribute('data-dogru');
+                const konu = b.getAttribute('data-konu');
+
+                if (secili && secili.value === dogruCevap) {
+                    dogru++;
+                } else {
+                    yanlis++;
+                    if(!eksikler.includes(konu)) eksikler.push(konu);
+                }
+            });
+
+            document.getElementById('ai-analiz-alani').style.display = "block";
+            document.getElementById('ai-performans-mesaji').innerHTML = `<strong>${aktifTest}</strong> Sonucu: <strong>${dogru} Doğru</strong> ve <strong>${yanlis} Yanlış/Boş</strong> çıkardın.`;
+
+            const panel = document.getElementById('ai-konu-anlatimlari');
+            panel.innerHTML = '';
+
+            if (eksikler.length === 0) {
+                panel.innerHTML = '<p style="color:var(--success-color); font-weight:bold;">Tebrikler! Testi hatasız tamamladın. Sınava tamamen hazırsın!</p>';
+            } else {
+                eksikler.forEach(k => {
+                    const bul = veritabanı.sorular.find(s => s.konu === k);
+                    if(bul) {
+                        const d = document.createElement('div');
+                        d.style.marginBottom = "12px";
+                        d.innerHTML = `
+                            <h5 style="color:var(--danger-color); margin: 0 0 4px 0;">🎯 Kaçırdığın Konu: ${k}</h5>
+                            <p style="background:white; padding:10px; border-radius:6px; border:1px solid #cbd5e0; margin:0; font-size:0.95rem;">${bul.anlatim}</p>
+                        `;
+                        panel.appendChild(d);
+                    }
+                });
+                document.getElementById('ai-analiz-alani').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // ADMIN PANEL KODLARI
+        function toggleAdminGiris() {
+            if(adminYandimi) {
+                document.getElementById('admin-panel').style.display = "block";
+            } else {
+                document.getElementById('admin-auth').style.display = 
+                    document.getElementById('admin-auth').style.display === "block" ? "none" : "block";
+            }
+        }
+
+        function adminGirisYap() {
+            const u = document.getElementById('admin-user').value;
+            const p = document.getElementById('admin-pass').value;
+            if(u === "admin" && p === "123") {
+                adminYandimi = true;
+                document.getElementById('admin-auth').style.display = "none";
+                document.getElementById('admin-panel').style.display = "block";
+                alert("Yönetici girişi başarılı.");
+            } else {
+                alert("Kullanıcı adı veya şifre hatalı!");
+            }
+        }
+
+        function yeniSoruKaydet() {
+            const t = document.getElementById('add-target-test').value;
+            const k = document.getElementById('add-sub-konu').value;
+            const s = document.getElementById('add-sub-soru').value;
+            const a = document.getElementById('opt-a').value;
+            const b = document.getElementById('opt-b').value;
+            const c = document.getElementById('opt-c').value;
+            const d = document.getElementById('opt-d').value;
+            const dogru = document.getElementById('correct-opt').value;
+            const anlatim = document.getElementById('add-sub-anlatim').value;
+
+            if(!k || !s || !a || !b || !c || !d || !anlatim) {
+                alert("Lütfen tüm alanları eksiksiz doldurun."); return;
+            }
+
+            veritabanı.sorular.push({ test: t, konu: k, soru: s, A: a, B: b, C: c, D: d, dogru, anlatim });
+            localStorage.setItem('sosyoloji_son_db', JSON.stringify(veritabanı));
+            
+            alert(`Soru başarıyla ${t} havuzuna eklendi.`);
+            if(aktifTest === t) renderSorular(t);
+        }
+
+        function adminCikis() { document.getElementById('admin-panel').style.display = "none"; }
+
+        window.onload = baslat;
+    </script>
+</body>
+</html>
