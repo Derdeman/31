@@ -204,7 +204,7 @@
                 <h3 style="margin-top:0; color:var(--primary-color);">💬 Sosyoloji Öğretmenine Merak Ettiğini Sor</h3>
                 <p>Müfredatta anlamadığın, merak ettiğin bir kavramı veya soruyu bana sor. Sana açıklayayım ve arkasından kendini denemen için sana özel bir soru üreteyim!</p>
                 <div class="form-group">
-                    <textarea id="user-ask-input" rows="3" placeholder="Örn: Monografi tekniğini açıklar mısın? veya Dikey hareketlilik nedir?"></textarea>
+                    <textarea id="user-ask-input" rows="3" placeholder="Örn: Monografi nedir? veya Dikey hareketlilik konusunu açıklar mısın?"></textarea>
                 </div>
                 <button class="btn btn-primary" onclick="soruCevaplaVeSoruUret()">Öğretmene Sor</button>
 
@@ -216,7 +216,7 @@
         </div>
 
         <div id="test-sayfasi" class="page">
-            <h2>📝 Kendini Dene: Sınav Alanı</h2>
+            <h2>📝 Kendini Dene: Sınav Alanı (Her Test 10 Soru)</h2>
             <div class="test-sub-menu">
                 <button class="sub-btn active" id="btn-t1" onclick="testSec('Test 1')">Test 1</button>
                 <button class="sub-btn" id="btn-t2" onclick="testSec('Test 2')">Test 2</button>
@@ -258,13 +258,44 @@
     </div>
 
     <script>
-        // Yenilenen Geniş Soru Veritabanı
+        // HER BİRİ 10 SORUDAN OLUŞAN TAM VERİTABANI (TOPLAM 30 ÖZGÜN SORU)
         let veritabanı = {
             sorular: [
-                { test: "Test 1", konu: "Sosyolojinin Araştırma Yöntem ve Teknikleri", soru: "Sınırları belirlenmiş küçük bir toplumsal grubun (bir köyün, suç çetesinin veya fabrikanın) her yönüyle derinlemesine incelenmesini sağlayan araştırma tekniği hangisidir?", A: "Anket", B: "Monografi", C: "Tümdengelim", D: "Katılımsız Gözlem", dogru: "B", anlatim: "Monografi; küçük ve sınırları belirli toplumsal yapıları derinlemesine inceleyen özel bir veri toplama tekniğidir." },
-                { test: "Test 1", konu: "Statü ve Saygınlık Farkı", soru: "Toplumda işgal edilen makam, pozisyon veya koltuğa ne ad verilir?", A: "Rol", B: "Sınıf", C: "Statü", D: "Saygınlık", dogru: "C", anlatim: "Statü toplumdaki yerinizdir (örneğin öğretmenlik). Saygınlık ise o yerin hakkını vererek takdir kazanmaktır." },
-                { test: "Test 2", konu: "Toplumsal Etkileşim Tipleri", soru: "Belli bir amaca ulaşmak için tarafların kurallara uyarak birbiriyle yarışmasına ne denir?", A: "Çatışma", B: "Rekabet", C: "Baskı", D: "Mübadele", dogru: "B", anlatim: "Rekabet, tarafların birbirini yok etmeye çalışmadan, belirli kurallar dahilinde bir ödüle ulaşma yarışıdır." },
-                { test: "Test 3", konu: "Toplumsal Bütünleşme", soru: "Toplumda kuralların gevşemesi, normların bağlayıcılığını yitirmesiyle oluşan kuralsızlık ve kaos durumuna Durkheim ne ad verir?", A: "Anomi", B: "Bütünleşme", C: "Uyum", D: "İş birliği", dogru: "A", anlatim: "Anomi, hızlı toplumsal değişim dönemlerinde eski kuralların yıkılıp yenilerinin tam oturmamasıyla oluşan kuralsızlıktır." }
+                // === TEST 1 (10 SORU) ===
+                { test: "Test 1", konu: "Sosyolojinin Araştırma Yöntem ve Teknikleri", soru: "Sınırları belirlenmiş küçük bir toplumsal grubu (bir köyü, suç çetesini) her yönüyle derinlemesine inceleyen teknik hangisidir?", A: "Anket", B: "Monografi", C: "Mülakat", D: "Kamuoyu Yoklaması", dogru: "B", anlatim: "Monografi; derinlemesine, sınırlandırılmış mikro grup incelemeleri yapan özel bir araştırma tekniğidir." },
+                { test: "Test 1", konu: "Sosyolojinin Araştırma Yöntem ve Teknikleri", soru: "Genel bir teoriden veya kuraldan yola çıkarak özel olayları açıklama biçimine ne ad verilir?", A: "Tümevarım", B: "Monografi", C: "Tümdengelim", D: "Katılımlı Gözlem", dogru: "C", anlatim: "Tümdengelim (deduction), bütünden parçaya, genel kuraldan tekil olaya inme yöntemidir." },
+                { test: "Test 1", konu: "Statü ve Saygınlık Farkı", soru: "Toplumda işgal edilen makam, pozisyon veya koltuğa verilen sosyolojik ad hangisidir?", A: "Toplumsal Rol", B: "Toplumsal Statü", C: "Toplumsal Prestij", D: "Toplumsal Sınıf", dogru: "B", anlatim: "Statü toplumdaki yerinizdir; hak ve sorumluluklar yükleyen resmi veya gayriresmi konumdur." },
+                { test: "Test 1", konu: "Statü ve Saygınlık Farkı", soru: "Bir bireyin sahip olduğu statünün hakkını vermesiyle toplumdan gördüğü takdir, değer ve sevgiye ne denir?", A: "Kazanılmış Rol", B: "Anahtar Statü", C: "Saygınlık (Prestij)", D: "Toplumsal Baskı", dogru: "C", anlatim: "Saygınlık, statünün içini doldurarak toplum nezdinde kazanılan değerdir." },
+                { test: "Test 1", konu: "Toplumsal Etkileşim Tipleri", soru: "İki arkadaşın imece usulüyle veya yardımlaşarak ortak bir amaç için birlikte çalışması hangi etkileşim tipidir?", A: "Mübadele", B: "İş Birliği", C: "Çatışma", D: "Rekabet", dogru: "B", anlatim: "İş birliği, tarafların ortak bir hedefe ulaşmak amacıyla güçlerini birleştirmesidir." },
+                { test: "Test 1", konu: "Toplumsal Etkileşim Tipleri", soru: "Belli bir ödüle ulaşmak için tarafların kurallara uyarak birbirleriyle yarışmasına ne denir?", A: "Rekabet", B: "Çatışma", C: "Asimilasyon", D: "Baskı", dogru: "A", anlatim: "Rekabet, tarafların birbirini yok etmeye çalışmadan, kurallar dahilinde bir ödüle koşmasıdır." },
+                { test: "Test 1", konu: "Dikey Hareketlilik", soru: "Bir fabrikada düz işçi olan birinin gece okulunu bitirip fabrika genel müdürü olması hangi hareketlilik türüdür?", A: "Yatay Hareketlilik", B: "Coğrafi Hareketlilik", C: "Yukarı Doğru Dikey Hareketlilik", D: "Aşağı Doğru Dikey Hareketlilik", dogru: "C", anlatim: "Kişi ekonomik ve statü olarak sınıf atladığı için yukarı doğru dikey hareketlilik yaşamıştır." },
+                { test: "Test 1", konu: "Toplumsal Bütünleşme", soru: "Toplumda kuralların gevşemesi ve normların bağlayıcılığını yitirmesiyle oluşan kuralsızlık/kaos durumuna ne ad verilir?", A: "Anomi", B: "Bütünleşme", C: "Uyum", D: "Mübadele", dogru: "A", anlatim: "Anomi, Émile Durkheim'a göre toplumsal bağların kopmasıyla ortaya çıkan kuralsızlık halidir." },
+                { test: "Test 1", konu: "Kültür Neden Önemlidir?", soru: "Aşağıdakilerden hangisi kültürün manevi ögelerinden biri olarak kabul edilir?", A: "Binalar ve mimari yapılar", B: "Gelenek, görenek ve inançlar", C: "Üretim araçları ve teknoloji", D: "Giyim kuşam eşyaları", dogru: "B", anlatim: "Gelenekler, normlar, diller ve inançlar kültürün soyut, yani manevi boyutunu oluşturur." },
+                { test: "Test 1", konu: "Ailenin Toplumsallaşmadaki Etkisi", soru: "Bireyin toplumsal kuralları ve kültürü öğrendiği 'ilk ve en etkili' birincil sosyalleşme mekanı hangisidir?", A: "Okul", B: "Arkadaş Grubu", C: "Aile", D: "Kitle İletişim Araçları", dogru: "C", anlatim: "Aile, çocuğun dünyayı tanıdığı ve temel değerleri aldığı ilk birincil sosyalleşme ajanıdır." },
+
+                // === TEST 2 (10 SORU) ===
+                { test: "Test 2", konu: "Sosyolojinin Araştırma Yöntem ve Teknikleri", soru: "Çok sayıda insana yazılı veya dijital sorular yönelterek hızlı ve yüzeysel veri toplamayı sağlayan yaygın teknik hangisidir?", A: "Monografi", B: "Anket", C: "Katılımlı Gözlem", D: "Tümdengelim", dogru: "B", anlatim: "Anket, geniş kitlelerin eğilimlerini ve fikirlerini ölçmek için kullanılan en hızlı veri toplama aracıdır." },
+                { test: "Test 2", konu: "Sosyolojinin Araştırma Yöntem ve Teknikleri", soru: "Tekil olayları inceleyerek genel bir sonuca veya teoriye ulaşma yöntemine ne ad verilir?", A: "Tümevarım", B: "Tümdengelim", C: "Monografi", D: "Mülakat", dogru: "A", anlatim: "Tümevarım (induction), özel durumlardan hareketle genel yasalara ve kurallara ulaşmaktır." },
+                { test: "Test 2", konu: "Statü ve Saygınlık Farkı", soru: "Aşağıdakilerden hangisi bireyin doğuştan sahip olduğu (verilmiş/atfedilmiş) bir statüdür?", A: "Doktor olmak", B: "Anne olmak", C: "Kadın/Erkek olmak", D: "Müdür olmak", dogru: "C", anlatim: "Cinsiyet, ırk veya yaş gibi özellikler bireyin kendi çabası olmadan doğuştan getirdiği verilmiş statülerdir." },
+                { test: "Test 2", konu: "Statü ve Saygınlık Farkı", soru: "Aynı unvana sahip iki öğretmenden birinin öğrencileri tarafından çok sevilip sayılması, diğerinin ise umursanmaması neyin farkını gösterir?", A: "Toplumsal Sınıfın", B: "Toplumsal Saygınlığın (Prestijin)", C: "Yatay Hareketliliğin", D: "Verilmiş Statünün", dogru: "B", anlatim: "Unvanlar aynı (statü eşit) olsa da toplumsal saygınlık, rolün ne kadar iyi uygulandığına göre değişir." },
+                { test: "Test 2", konu: "Toplumsal Etkileşim Tipleri", soru: "Karşılıklı çıkar ve 'ben sana yardım edeyim, sen de bana et' mantığına dayanan etkileşim tipi hangisidir?", A: "Çatışma", B: "Mübadele (Alışveriş)", C: "Baskı", D: "Benzeştirme", dogru: "B", anlatim: "Mübadele, gönüllülük ve karşılıklılık esasına göre yürütülen sosyal alışveriştir." },
+                { test: "Test 2", konu: "Toplumsal Etkileşim Tipleri", soru: "Tarafların kuralları çiğneyerek birbirini engellemeye, yok etmeye veya alt etmeye çalıştığı kuralsız güç mücadelesine ne denir?", A: "Çatışma", B: "Rekabet", C: "Uyum", D: "İş Birliği", dogru: "A", anlatim: "Çatışma, rekabetin aksine kuralların yıkıldığı ve yıkıcı bir hal aldığı etkileşim sürecidir." },
+                { test: "Test 2", konu: "Dikey Hareketlilik", soru: "Büyük bir holding sahibi iş insanının iflas ederek bir dükkanda tezgahtar olarak çalışmaya başlaması hangi kavramla ifade edilir?", A: "Yatay Hareketlilik", B: "Yukarı Doğru Dikey Hareketlilik", C: "Aşağı Doğru Dikey Hareketlilik", D: "Coğrafi Hareketlilik", dogru: "C", anlatim: "Gelir ve statü kaybıyla üst tabakadan alt tabakaya geçiş, aşağı doğru dikey hareketliliktir." },
+                { test: "Test 2", konu: "Toplumsal Bütünleşme", soru: "Toplumsal bütünleşmeyi ve kurumların birbiriyle uyum içinde kenetlenmesini sağlayan en temel öge hangisidir?", A: "Sürekli ekonomik krizler", B: "Ortak değerler, adalet ve güçlü kültür", C: "Bireyler arası sürekli çatışma", D: "Toplumsal kuralsızlık", dogru: "B", anlatim: "Adalet duygusu, ortak normlar ve paylaşılan bir kültür bütünleşmeyi ayakta tutar." },
+                { test: "Test 2", konu: "Kültür Neden Önemlidir?", soru: "Kültürün toplumdaki en temel işlevi aşağıdakilerden hangisidir?", A: "Ekonomik sınıfları birbirinden ayırmak", B: "Topluma ortak bir kimlik kazandırmak ve bütünleşmeyi sağlamak", C: "Dikey hareketliliği tamamen engellemek", D: "Bireyleri yalnızlığa sevk etmek", dogru: "B", anlatim: "Kültür 'biz kimiz?' sorusunun yanıtıdır; toplumsal dayanışmayı kurar ve dağılmayı önler." },
+                { test: "Test 2", confidential: false, konu: "Ailenin Toplumsallaşmadaki Etkisi", soru: "Ailede alınan sosyalleşme eğitiminin en belirgin özelliği aşağıdakilerden hangisidir?", A: "Geçici ve önemsiz olması", B: "Kalıcı olması ve bireyin karakterini hayat boyu etkilemesi", C: "Sadece ekonomik çıkarlara dayanması", D: "Okul eğitiminden sonra başlaması", dogru: "B", anlatim: "Ailede edinilen birincil sosyalleşme, bireyin temel kişilik özelliklerini oluşturduğundan çok kalıcıdır." },
+
+                // === TEST 3 (10 SORU) ===
+                { test: "Test 3", konu: "Sosyolojinin Araştırma Yöntem ve Teknikleri", soru: "Bir sosyoloğun suç çetelerini incelemek için çeteye üye gibi sızıp onlarla yaşaması hangi araştırma tekniğidir?", A: "Katılımsız Gözlem", B: "Katılımlı Gözlem", C: "Anket", D: "Tümdengelim", dogru: "B", anlatim: "Araştırmacının incelediği grubun içine bizzat girip onlardan biri gibi yaşamasına katılımlı gözlem denir." },
+                { test: "Test 3", konu: "Sosyolojinin Araştırma Yöntem ve Teknikleri", soru: "Sosyoloğun olaylara müdahale etmeden, çaktırmadan dışarıdan izleyerek veri toplamasına ne ad verilir?", A: "Mülakat", B: "Katılımsız Gözlem", C: "Monografi", D: "Tümevarım", dogru: "B", anlatim: "Dışarıdan ve sürece müdahil olmadan yapılan gözlemlere katılımsız gözlem denir." },
+                { test: "Test 3", konu: "Statü ve Saygınlık Farkı", soru: "Bireyin kendi emeği, eğitimi ve başarısı sonucunda yaşamında elde ettiği statülere ne ad verilir?", A: "Verilmiş Statü", B: "Kazanılmış Statü", C: "Geçici Rol", D: "Toplumsal Prestij", dogru: "B", anlatim: "Doktorluk, mühendislik veya yöneticilik gibi sonradan çabayla kazanılan konumlara kazanılmış statü denir." },
+                { test: "Test 3", konu: "Statü ve Saygınlık Farkı", soru: "Toplumda saygınlığı (prestiji) belirleyen temel ölçüt aşağıdakilerden hangisidir?", A: "Sadece bireyin sahip olduğu ham unvan", B: "Bireyin o unvanın/rolün hakkını ahlaki ve mesleki olarak ne kadar iyi verdiği", C: "Doğuştan hangi ailede doğduğu", D: "Bireyin fiziksel dış görünüşü", dogru: "B", anlatim: "Saygınlık koltuğun kendisiyle değil, koltuğu doldurma kalitesiyle doğrudan ilişkilidir." },
+                { test: "Test 3", konu: "Toplumsal Etkileşim Tipleri", soru: "Çatışmayı önlemek amacıyla bireyin kendi fikirlerinden ödün vererek grubun beklentilerine ayak uydurmasına ne denir?", A: "Baskı", B: "Uyum (Uysallık)", C: "Mübadele", D: "Çatışma", dogru: "B", anlatim: "Uyum, sosyal dengenin bozulmaması ve çatşma çıkmaması için beklentilere entegre olma durumudur." },
+                { test: "Test 3", konu: "Toplumsal Etkileşim Tipleri", soru: "Güçlü bir tarafın zayıf bir tarafa kendi isteklerini tehdit, zorlama veya şiddetle kabul ettirmesi hangi etkileşimdir?", A: "Baskı (Zorlama)", B: "Rekabet", C: "İş Birliği", D: "Asimilasyon", dogru: "A", anlatim: "Baskı, sosyal ilişkide güce dayalı bir dayatma ve zorlama durumunu ifade eder." },
+                { test: "Test 3", konu: "Dikey Hareketlilik", soru: "Bir mahalle bakkalının dükkanını kapatıp yan mahalleye kasap dükkanı açması sosyolojide hangi kavramla açıklanır?", A: "Dikey Hareketlilik", B: "Yatay Hareketlilik", C: "Aşağı Doğru Hareketlilik", D: "Toplumsal Tabakalaşma", dogru: "B", anlatim: "Bireyin gelir grubu ve sınıfı değişmeden sadece iş veya mekan değiştirmesi yatay hareketliliktir." },
+                { test: "Test 3", konu: "Toplumsal Bütünleşme", soru: "Toplumda ani ve kontrolsüz değişimler yaşandığında bütünleşme zayıflar. Bu durumun sonucunda aşağıdakilerden hangisi artar?", A: "Toplumsal Dayanışma", B: "Sosyal Kaos ve Kuralsızlık (Anomi)", C: "Kültürel Uyum", D: "İş Birliği", dogru: "B", anlatim: "Bütünleşmenin koptuğu kriz dönemlerinde anomi, yani kuralsızlık ve güvensizlik tırmanır." },
+                { test: "Test 3", konu: "Kültür Neden Önemlidir?", soru: "Kültürün nesilden nesile aktarılmasını ve toplumun devamlılığını sağlayan en önemli kültürel öge hangisidir?", A: "Para ve ticaret", B: "Dil", C: "Mimari araçlar", D: "Fabrikalar", dogru: "B", anlatim: "Dil, sembolleri ve biriktirilen kültürel mirası sonraki nesillere taşıyan en temel manevi araçtır." },
+                { test: "Test 3", konu: "Ailenin Toplumsallaşmadaki Etkisi", soru: "Aşağıdakilerden hangisi ailenin çocuğu toplumsallaştırırken öğrettiği ögelerden biri değildir?", A: "Ahlak ve görgü kuralları", B: "Anadil ve konuşma becerisi", C: "Hukuk sistemindeki tüm detaylı ceza kanunları", D: "Temel kişilik yapısı ve roller", dogru: "C", anlatim: "Aile temel kuralları ve dili öğretir; profesyonel veya detaylı uzmanlık hukuk bilgileri ailenin değil, resmi kurumların işidir." }
             ]
         };
 
@@ -365,13 +396,12 @@
                     anlatimKutusu.appendChild(yeniNot);
                 });
             } else {
-                mesaj.innerHTML += `🎉 <strong>Harika!</strong> Yapay zeka analizine göre bu testteki tüm konulara tam olarak hakimsin!`;
+                mesaj.innerHTML += `🎉 <strong>Harika!</strong> Yapay zeka analizine göre bu testteki tüm konulara tam olarak hakimsin! Sınavda başarılar!`;
             }
             
             analizAlani.scrollIntoView({ behavior: 'smooth' });
         }
 
-        // 💬 YENİ KONULARLA DESTEKLENEN DİNAMİK SORU BOTU
         function soruCevaplaVeSoruUret() {
             const girdi = document.getElementById('user-ask-input').value.trim();
             if(!girdi) { alert("Lütfen öğretmenine sormak için bir soru veya kavram girin!"); return; }
@@ -391,27 +421,22 @@
                 let uretilenSoruDetay = {};
 
                 if (temizGirdi.includes("yöntem") || temizGirdi.includes("teknik") || temizGirdi.includes("monografi") || temizGirdi.includes("gözlem")) {
-                    cevap = `<strong>👨‍🏫 Yapay Zeka Öğretmen:</strong> Sosyolojik araştırma teknikleri verileri doğru toplamak için şarttır. Örneğin; sınırları belli dar bir grubu derinlemesine incelemeye <strong>Monografi</strong> denirken, kalabalık kitlelerden yüzeysel bilgi almaya <strong>Anket</strong> denir. Araştırmacının incelenen grubun içine sızarak onlardan biri gibi yaşamasına ise <strong>Katılımlı Gözlem</strong> adı verilir.`;
-                    uretilenSoru = `Bir sosyolog, bir fabrikadaki işçilerin çalışma koşullarını ve aralarındaki gizli ilişkileri öğrenmek amacıyla fabrikaya işçi olarak girmiş ve 6 ay boyunca kimliğini belli etmeden orada çalışıp veri toplamıştır. Bu sosyoloğun kullandığı araştırma tekniği hangisidir?`;
-                    uretilenSoruDetay = { A: "Anket Çalışması", B: "Katılımlı Gözlem", C: "Mülakat", D: "Monografi İncelemesi", dogru: "B" };
+                    cevap = `<strong>👨‍🏫 Yapay Zeka Öğretmen:</strong> Sosyolojik araştırma teknikleri bilimsel doğruluğu sağlar. Sınırları belli küçük ve mikro grupları derinlemesine analiz etmeye <strong>Monografi</strong> diyoruz. Geniş kitlelerin fikrini yazılı almak ise <strong>Anket</strong> tekniğidir.`;
+                    uretilenSoru = `Bir araştırmacı, yeni kurulmuş küçük bir internet topluluğunun üyeleri arasındaki hiyerarşiyi ve davranış kalıplarını her yönüyle çok detaylı ve derinlemesine incelemek istemektedir. Bu araştırmacının seçmesi gereken teknik hangisidir?`;
+                    uretilenSoruDetay = { A: "Anket", B: "Monografi", C: "Tümdengelim", D: "İstatistik Analiz", dogru: "B" };
                 }
                 else if (temizGirdi.includes("hareketlilik") || temizGirdi.includes("dikey") || temizGirdi.includes("yatay")) {
-                    cevap = `<strong>👨‍🏫 Yapay Zeka Öğretmen:</strong> Toplumsal tabakalar (alt-orta-üst) arasındaki geçişlere <strong>Dikey Hareketlilik</strong> diyoruz. Bir tezgahtarın kendi firmasını kurup büyük bir ihracatçı olması dikey hareketliliğe harika bir örnektir çünkü sınıf değiştirmiştir. Statü değişip sınıf aynı kalıyorsa buna <strong>Yatay Hareketlilik</strong> (örn: bakkalın manav olması) denir.`;
-                    uretilenSoru = `Bir maden işçisinin sayısal loto kazanarak lüks konut projeleri üreten bir inşaat şirketinin sahibi haline gelmesi ve üst tabakaya geçmesi sosyolojide ne ile adlandırılır?`;
-                    uretilenSoruDetay = { A: "Yatay Hareketlilik", B: "Yukarı Doğru Dikey Hareketlilik", C: "Toplumsal Rol Çatışması", D: "Toplumsal Uyum", dogru: "B" };
+                    cevap = `<strong>👨‍🏫 Yapay Zeka Öğretmen:</strong> Toplumsal tabakalar arası geçişlere <strong>Dikey Hareketlilik</strong> denir. Gelir, yaşam tarzı ve sınıf değişir. Eğer sınıf değişmiyor, sadece iş yeri veya benzer unvan değişiyorsa bu <strong>Yatay Hareketlilik</strong> adını alır.`;
+                    uretilenSoru = `Bir tekstil işçisinin kendi markasını kurarak tüm dünyaya kıyafet ihraç eden zengin bir iş insanı konumuna gelmesi hangi hareketlilik türüdür?`;
+                    uretilenSoruDetay = { A: "Yatay Hareketlilik", B: "Yukarı Doğru Dikey Hareketlilik", C: "Aşağı Doğru Dikey Hareketlilik", D: "Coğrafi Hareketlilik", dogru: "B" };
                 }
                 else if (temizGirdi.includes("statü") || temizGirdi.includes("saygınlık") || temizGirdi.includes("prestij")) {
-                    cevap = `<strong>👨‍🏫 Yapay Zeka Öğretmen:</strong> <strong>Statü</strong> senin toplumdaki resmi unvanındır (Öğretmenlik, doktorluk gibi). <strong>Saygınlık (Prestij)</strong> ise o unvanın hakkını ne kadar iyi verdiğinle ilgilidir. Aynı statüdeki iki esnaftan biri dürüstlüğüyle sevilirken diğeri sevilmiyorsa farkı belirleyen şey saygınlıktır.`;
-                    uretilenSoru = `Toplumda herkesle aynı meslek unvanına ve kademesine sahip olmasına rağmen dürüstlüğü, adaleti ve insan sevgisiyle tüm şehrin takdirini kazanan bir hakimin durumu aşağıdakilerden hangisinin yüksek olduğunu gösterir?`;
-                    uretilenSoruDetay = { A: "Toplumsal Saygınlığının (Prestijinin)", B: "Maddi Statüsünün", C: "Rol Çatışmasının", D: "Yatay Hareketliliğinin", dogru: "A" };
-                }
-                else if (temizGirdi.includes("bütünleşme") || temizGirdi.includes("anomi")) {
-                    cevap = `<strong>👨‍🏫 Yapay Zeka Öğretmen:</strong> <strong>Toplumsal Bütünleşme</strong>, toplumun kurum ve değerlerinin bir uyum içinde kenetlenmesidir. Bütünleşmenin koptuğu, kuralların işlemediği kaos durumlarına ise Émile Durkheim <strong>Anomi (Kuralsızlık)</strong> der.`;
-                    uretilenSoru = `Büyük bir ekonomik çöküş veya savaş sonrası toplumsal kuralların bağlayıcılığını kaybetmesi, hırsızlık ve güvensizliğin artması, kaos yaşanması durumu hangi kavramla ifade edilir?`;
-                    uretilenSoruDetay = { A: "Toplumsal Bütünleşme", B: "İş Birliği", C: "Anomi (Kuralsızlık)", D: "Asimilasyon", dogru: "C" };
+                    cevap = `<strong>👨‍🏫 Yapay Zeka Öğretmen:</strong> <strong>Statü</strong> senin toplumdaki resmi etiketindir (Örn: Doktor olmak). <strong>Saygınlık (Prestij)</strong> ise o etiketin içini ne kadar ahlaklı ve başarılı doldurduğundur. Koltuk statüdür, koltuğun hakkını vermek prestijdir.`;
+                    uretilenSoru = `Aynı hastanede çalışan iki cerrahtan birinin hastalarına gösterdiği aşırı ilgi ve şefkat sebebiyle tüm şehirde el üstünde tutulması onun doğrudan neyini artırmıştır?`;
+                    uretilenSoruDetay = { A: "Toplumsal Statüsünü", B: "Toplumsal Saygınlığını (Prestijini)", C: "Rol Çatışmasını", D: "Yatay Hareketliliğini", dogru: "B" };
                 }
                 else {
-                    cevap = `<strong>👨‍🏫 Yapay Zeka Öğretmen:</strong> "${girdi}" konulu sorun harika! Sosyolojide bu tip durumlar toplumsal yapı, normlar ve bireylerin etkileşim süreçleri üzerinden analiz edilir. Unutma, sosyoloji bireysel kararları değil, toplumsal kalıpları inceler.`;
+                    cevap = `<strong>👨‍🏫 Yapay Zeka Öğretmen:</strong> "${girdi}" konulu sorun harika! Sosyolojide bu tip durumlar toplumsal yapı, normlar ve bütünleşme süreçleri üzerinden analiz edilir. Sosyoloji genel toplumsal yapıları mercek altına alır.`;
                     uretilenSoru = `Peki madem bu konuyu ele aldık, genel bir sosyoloji sorusu çöz bakalım: <em>"Aşağıdakilerden hangisi sosyoloji biliminin doğrudan inceleme alanına girmez?"</em>`;
                     uretilenSoruDetay = { A: "Toplumsal Gruplar", B: "İnsan Davranışlarının Psikolojik Altyapısı", C: "Kültürel Değişimler", D: "Toplumsal Kurumlar", dogru: "B" };
                 }
