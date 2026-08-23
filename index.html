@@ -3,51 +3,68 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Grup Ses Odası</title>
-  <!-- Trystero Torrent/WebRTC Kütüphanesi -->
+  <title>Çoklu Ses Odası</title>
+  <!-- Trystero Torrent Kütüphanesi -->
   <script type="module">
     import { joinRoom } from 'https://cdn.skypack.dev/trystero/torrent';
 
-    const config = { appId: 'bizim-grup-sesli-sohbet-app' };
-    const room = joinRoom(config, 'ana-ses-odasi');
+    const config = { appId: 'bizim-grup-sesli-sohbet-v2' };
+    const room = joinRoom(config, 'genel-ses-odasi-2026');
 
     let localStream = null;
     const audioContainer = document.getElementById('audio-container');
     const statusText = document.getElementById('status-text');
     const joinBtn = document.getElementById('join-btn');
 
-    // 1. Mikrofon izni al
-    navigator.mediaDevices.getUserMedia({ audio: true, video: false })
-      .then(stream => {
-        localStream = stream;
-        statusText.innerText = "🟢 Mikrofon Hazır";
-        joinBtn.disabled = false;
-      })
-      .catch(err => {
-        statusText.innerText = "❌ Mikrofon izni reddedildi!";
-      });
+    // Mikrofon Erişimi Al
+    navigator.mediaDevices.getUserMedia({ 
+      audio: {
+        echoCancellation: true, // Eko önleme
+        noiseSuppression: true  // Gürültü engelleme
+      }, 
+      video: false 
+    })
+    .then(stream => {
+      localStream = stream;
+      statusText.innerText = "🟢 Mikrofon Hazır";
+      joinBtn.disabled = false;
+    })
+    .catch(err => {
+      statusText.innerText = "❌ Mikrofon İzni Verilmedi!";
+      console.error(err);
+    });
 
-    // 2. Odaya Katıl
-    joinBtn.addEventListener('click', () => {
+    // Odaya Katılma İşlemi
+    joinBtn.addEventListener('click', async () => {
+      // Tarayıcının ses engelini kaldırmak için AudioContext başlat
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') {
+        await audioCtx.resume();
+      }
+
       document.getElementById('login-box').style.display = 'none';
       document.getElementById('room-box').style.display = 'block';
 
-      // Odadakilere kendi sesini gönder
+      // Kendi mikrofon sesini odaya aktar
       room.addStream(localStream);
 
-      // Odadaki diğer kişilerin sesleri geldiğinde oynat
+      // Odadaki diğer kişilerin sesleri geldiğinde
       room.onPeerStream((stream, peerId) => {
         let audio = document.getElementById(`audio-${peerId}`);
         if (!audio) {
           audio = document.createElement('audio');
           audio.id = `audio-${peerId}`;
           audio.autoplay = true;
+          audio.playsInline = true; // Mobil cihazlar için şart
           audioContainer.appendChild(audio);
         }
         audio.srcObject = stream;
+        
+        // Sesin oynatıldığından emin ol
+        audio.play().catch(e => console.log("Ses oynatma hatası:", e));
       });
 
-      // Biri ayrıldığında sesini kaldır
+      // Biri çıktığında sesini sil
       room.onPeerLeave(peerId => {
         const audio = document.getElementById(`audio-${peerId}`);
         if (audio) audio.remove();
@@ -101,7 +118,7 @@
     <h2>🔊 Genel Ses Odası</h2>
     
     <div id="login-box">
-      <p style="font-size: 13px; color: #8b949e;">Herkes aynı adrese girerek sese katılabilir.</p>
+      <p style="font-size: 13px; color: #8b949e;">Katıl butonuna basarak sese bağlanın.</p>
       <button id="join-btn" class="btn-join" disabled>Odaya Katıl</button>
     </div>
 
