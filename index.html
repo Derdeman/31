@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sesli Sohbet Odası</title>
+  <title>Genel Ses Odası</title>
   <!-- PeerJS Kütüphanesi -->
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
   <style>
@@ -19,90 +19,113 @@
     }
     .card {
       background: #1e1e1e;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+      padding: 24px;
+      border-radius: 12px;
       width: 320px;
       text-align: center;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
     }
     input, button {
-      width: 90%;
-      padding: 10px;
+      width: 100%;
+      padding: 12px;
       margin: 8px 0;
-      border-radius: 5px;
+      border-radius: 6px;
       border: none;
+      box-sizing: border-box;
     }
-    input { background: #2c2c2c; color: white; }
-    button { background: #007bff; color: white; font-weight: bold; cursor: pointer; }
-    button:hover { background: #0056b3; }
-    .status { margin-top: 10px; font-size: 14px; color: #888; }
+    input { background: #2a2a2a; color: white; }
+    button { background: #5865F2; color: white; font-weight: bold; cursor: pointer; }
+    button:hover { background: #4752C4; }
+    .status { color: #57F287; margin-top: 10px; font-size: 14px; }
+    .room-view { display: none; }
   </style>
 </head>
 <body>
 
   <div class="card">
-    <h2>Sesli Sohbet</h2>
-    
-    <p>Senin ID'n:</p>
-    <h3 id="my-id" style="color: #00ff88;">Yükleniyor...</h3>
+    <h2>Ortak Ses Odası</h2>
 
-    <hr style="border-color: #333;">
+    <!-- Giriş Ekranı -->
+    <div id="login-view">
+      <input type="text" id="username" placeholder="Kullanıcı Adın">
+      <button id="join-btn">Odaya Katıl</button>
+    </div>
 
-    <input type="text" id="peer-id-input" placeholder="Arkadaşının ID'sini yaz">
-    <button id="call-btn">Sese Bağlan</button>
-
-    <div class="status" id="status-text">Durum: Bekleniyor...</div>
+    <!-- Oda Ekranı -->
+    <div id="room-view" class="room-view">
+      <div class="status">🟢 Odadasın</div>
+      <p style="color: #aaa; font-size: 13px;">Odadaki diğer kişilerle sesin otomatik olarak bağlandığında konuşabilirsin.</p>
+      <button id="leave-btn" style="background: #ED4245;">Ayrıl</button>
+    </div>
   </div>
 
-  <!-- Karşı tarafın sesini oynatacak gizli ses öğesi -->
-  <audio id="remote-audio" autoplay></audio>
+  <div id="audio-container"></div>
 
   <script>
-    const peer = new Peer(); // Rastgele bir Peer ID oluşturur
+    // Sabit Genel Oda İsmi
+    const ROOM_ID = "bizim-ortak-ses-odasi-12345";
+    
+    let peer;
     let localStream;
 
-    // 1. Kullanıcının mikrofonuna erişim al
+    // 1. Kullanıcıdan Mikrofon İzni Al
     navigator.mediaDevices.getUserMedia({ audio: true, video: false })
       .then(stream => {
         localStream = stream;
-        document.getElementById('status-text').innerText = "Mikrofon aktif, bağlanmaya hazır.";
       })
       .catch(err => {
-        console.error("Mikrofon izni alınamadı:", err);
-        document.getElementById('status-text').innerText = "Hata: Mikrofona erişilemedi!";
+        alert("Mikrofona erişim izni vermen gerekiyor!");
       });
 
-    // 2. Kendi Peer ID'ni ekranda göster
-    peer.on('open', id => {
-      document.getElementById('my-id').innerText = id;
-    });
+    // 2. Katıl Butonuna Tıklandığında
+    document.getElementById('join-btn').addEventListener('click', () => {
+      const username = document.getElementById('username').value.trim();
+      if (!username) return alert("Lütfen bir isim yaz!");
 
-    // 3. Biri seni aradığında aramayı kabul et
-    peer.on('call', call => {
-      document.getElementById('status-text').innerText = "Biri bağlandı!";
-      call.answer(localStream); // Kendi sesini gönder
+      document.getElementById('login-view').style.display = 'none';
+      document.getElementById('room-view').style.display = 'block';
 
-      call.on('stream', remoteStream => {
-        // Karşı tarafın sesini dinle
-        document.getElementById('remote-audio').srcObject = remoteStream;
+      // PeerJS bağlantısını başlat
+      peer = new Peer();
+
+      peer.on('open', id => {
+        // Odaya bağlanmak için sabit adresi ara
+        connectToRoom();
+      });
+
+      // Biri bizi aradığında (sesimizi dinlemek istediğinde)
+      peer.on('call', call => {
+        call.answer(localStream); // Sesimizi gönder
+        
+        const audio = document.createElement('audio');
+        audio.autoplay = true;
+
+        call.on('stream', remoteStream => {
+          audio.srcObject = remoteStream;
+          document.getElementById('audio-container').appendChild(audio);
+        });
       });
     });
 
-    // 4. Arkadaşını aramak için butona tıkla
-    document.getElementById('call-btn').addEventListener('click', () => {
-      const friendId = document.getElementById('peer-id-input').value;
-      if (!friendId) {
-        alert("Lütfen arkadaşının ID'sini gir!");
-        return;
+    // Odadaki diğer kullanıcılara bağlanma fonksiyonu
+    function connectToRoom() {
+      // Rastgele oluşan bağlantıyı odaya dahil etme mantığı
+      const call = peer.call(ROOM_ID, localStream);
+
+      if (call) {
+        const audio = document.createElement('audio');
+        audio.autoplay = true;
+
+        call.on('stream', remoteStream => {
+          audio.srcObject = remoteStream;
+          document.getElementById('audio-container').appendChild(audio);
+        });
       }
+    }
 
-      document.getElementById('status-text').innerText = "Aranıyor...";
-      const call = peer.call(friendId, localStream);
-
-      call.on('stream', remoteStream => {
-        document.getElementById('status-text').innerText = "Sesli bağlantı kuruldu!";
-        document.getElementById('remote-audio').srcObject = remoteStream;
-      });
+    // Odadan ayrılma
+    document.getElementById('leave-btn').addEventListener('click', () => {
+      location.reload();
     });
   </script>
 </body>
