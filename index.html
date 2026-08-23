@@ -3,11 +3,64 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Çoklu Sesli Sohbet Odası</title>
-  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+  <title>Grup Ses Odası</title>
+  <!-- Trystero Torrent/WebRTC Kütüphanesi -->
+  <script type="module">
+    import { joinRoom } from 'https://cdn.skypack.dev/trystero/torrent';
+
+    const config = { appId: 'bizim-grup-sesli-sohbet-app' };
+    const room = joinRoom(config, 'ana-ses-odasi');
+
+    let localStream = null;
+    const audioContainer = document.getElementById('audio-container');
+    const statusText = document.getElementById('status-text');
+    const joinBtn = document.getElementById('join-btn');
+
+    // 1. Mikrofon izni al
+    navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+      .then(stream => {
+        localStream = stream;
+        statusText.innerText = "🟢 Mikrofon Hazır";
+        joinBtn.disabled = false;
+      })
+      .catch(err => {
+        statusText.innerText = "❌ Mikrofon izni reddedildi!";
+      });
+
+    // 2. Odaya Katıl
+    joinBtn.addEventListener('click', () => {
+      document.getElementById('login-box').style.display = 'none';
+      document.getElementById('room-box').style.display = 'block';
+
+      // Odadakilere kendi sesini gönder
+      room.addStream(localStream);
+
+      // Odadaki diğer kişilerin sesleri geldiğinde oynat
+      room.onPeerStream((stream, peerId) => {
+        let audio = document.getElementById(`audio-${peerId}`);
+        if (!audio) {
+          audio = document.createElement('audio');
+          audio.id = `audio-${peerId}`;
+          audio.autoplay = true;
+          audioContainer.appendChild(audio);
+        }
+        audio.srcObject = stream;
+      });
+
+      // Biri ayrıldığında sesini kaldır
+      room.onPeerLeave(peerId => {
+        const audio = document.getElementById(`audio-${peerId}`);
+        if (audio) audio.remove();
+      });
+    });
+
+    document.getElementById('leave-btn').addEventListener('click', () => {
+      location.reload();
+    });
+  </script>
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: Arial, sans-serif;
       background-color: #0d1117;
       color: #c9d1d9;
       display: flex;
@@ -16,57 +69,44 @@
       height: 100vh;
       margin: 0;
     }
-    .box {
+    .card {
       background-color: #161b22;
       padding: 30px;
       border-radius: 12px;
       border: 1px solid #30363d;
-      width: 340px;
+      width: 320px;
       text-align: center;
       box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     }
     h2 { margin-top: 0; color: #58a6ff; }
-    input, button {
+    button {
       width: 100%;
       padding: 12px;
-      margin: 8px 0;
+      margin-top: 15px;
       border-radius: 6px;
-      border: 1px solid #30363d;
-      box-sizing: border-box;
-      font-size: 15px;
-    }
-    input { background-color: #0d1117; color: #c9d1d9; }
-    button {
-      background-color: #238636;
-      color: white;
-      font-weight: bold;
       border: none;
+      font-size: 15px;
+      font-weight: bold;
       cursor: pointer;
     }
-    button:hover { background-color: #2ea043; }
-    .btn-leave { background-color: #da3633; }
-    .btn-leave:hover { background-color: #b62324; }
+    .btn-join { background-color: #238636; color: white; }
+    .btn-join:hover { background-color: #2ea043; }
+    .btn-leave { background-color: #da3633; color: white; }
     .status { margin-top: 15px; font-size: 14px; color: #8b949e; }
-    .room-info { display: none; margin-top: 15px; }
   </style>
 </head>
 <body>
 
-  <div class="box">
-    <h2>🔊 Grup Ses Odası</h2>
+  <div class="card">
+    <h2>🔊 Genel Ses Odası</h2>
     
-    <!-- Giriş Ekranı -->
-    <div id="login-screen">
-      <input type="text" id="username" placeholder="Kullanıcı Adın">
-      <button id="join-btn">Odaya Katıl</button>
+    <div id="login-box">
+      <p style="font-size: 13px; color: #8b949e;">Herkes aynı adrese girerek sese katılabilir.</p>
+      <button id="join-btn" class="btn-join" disabled>Odaya Katıl</button>
     </div>
 
-    <!-- Oda İçi Ekranı -->
-    <div id="room-screen" class="room-info">
-      <div class="status" style="color: #3fb950;">🟢 Sesli Odadasın</div>
-      <p style="font-size: 12px; color: #8b949e; margin-top: 10px;">
-        Giren herkesin sesi otomatik bağlanır.
-      </p>
+    <div id="room-box" style="display: none;">
+      <div class="status" style="color: #3fb950; font-size: 16px;">🟢 Odadasın (Ses Açık)</div>
       <button id="leave-btn" class="btn-leave">Odadan Ayrıl</button>
     </div>
 
@@ -75,85 +115,5 @@
 
   <div id="audio-container"></div>
 
-  <script>
-    // Ortak Oda Bağlantı Kanalı
-    const ROOM_PREFIX = "bizim-grup-ses-odasi-2026-";
-    
-    let localStream;
-    let peer;
-    const peers = {};
-
-    // 1. Sayfa Açılınca Mikrofon İzni Al
-    navigator.mediaDevices.getUserMedia({ audio: true, video: false })
-      .then(stream => {
-        localStream = stream;
-        document.getElementById('status-text').innerText = "🟢 Mikrofon Hazır";
-      })
-      .catch(err => {
-        document.getElementById('status-text').innerText = "❌ Mikrofon izni vermelisiniz!";
-      });
-
-    // 2. Odaya Katıl Butonu
-    document.getElementById('join-btn').addEventListener('click', () => {
-      const name = document.getElementById('username').value.trim();
-      if (!name) return alert("Lütfen bir isim yazın!");
-
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('room-screen').style.display = 'block';
-      document.getElementById('status-text').innerText = "Odaya bağlanıyor...";
-
-      // Rastgele ve benzersiz bir ID ile Peer başlat
-      peer = new Peer();
-
-      peer.on('open', myId => {
-        document.getElementById('status-text').innerText = "Bağlantı kuruldu!";
-
-        // Biri bizi aradığında cevabı ver ve sesini dinle
-        peer.on('call', call => {
-          call.answer(localStream);
-          handleCall(call);
-        });
-
-        // Sunucudan aktif kişileri sorgulamak yerine odadaki herkese bağlan
-        // (Giren kişi diğer katılımcıları sisteme ekler)
-        peer.on('connection', conn => {
-          conn.on('data', data => {
-            if (data.type === 'new-user' && data.peerId !== myId) {
-              connectToNewUser(data.peerId);
-            }
-          });
-        });
-      });
-    });
-
-    // Yeni Katılan Kişiyi Arama Fonksiyonu
-    function connectToNewUser(userId) {
-      if (peers[userId]) return; // Zaten bağlıysa tekrar arama
-
-      const call = peer.call(userId, localStream);
-      handleCall(call);
-    }
-
-    // Ses Akışını Bağlama
-    function handleCall(call) {
-      peers[call.peer] = call;
-      const audio = document.createElement('audio');
-      audio.autoplay = true;
-
-      call.on('stream', remoteStream => {
-        audio.srcObject = remoteStream;
-        document.getElementById('audio-container').appendChild(audio);
-      });
-
-      call.on('close', () => {
-        audio.remove();
-      });
-    }
-
-    // Odadan Ayrılma
-    document.getElementById('leave-btn').addEventListener('click', () => {
-      location.reload();
-    });
-  </script>
 </body>
 </html>
