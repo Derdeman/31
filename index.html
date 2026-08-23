@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sesli Sohbet Odası</title>
+  <title>Bizim Ses Odası</title>
   <!-- PeerJS Kütüphanesi -->
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
   <style>
@@ -19,7 +19,7 @@
     }
     .box {
       background-color: #161b22;
-      padding: 24px;
+      padding: 30px;
       border-radius: 12px;
       border: 1px solid #30363d;
       width: 320px;
@@ -27,102 +27,121 @@
       box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     }
     h2 { margin-top: 0; color: #58a6ff; }
-    input, button {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      border-radius: 6px;
-      border: 1px solid #30363d;
-      box-sizing: border-box;
-      font-size: 14px;
-    }
-    input { background-color: #0d1117; color: #c9d1d9; }
     button {
-      background-color: #238636;
-      color: white;
-      font-weight: bold;
+      width: 100%;
+      padding: 12px;
+      margin-top: 15px;
+      border-radius: 6px;
       border: none;
+      font-size: 16px;
+      font-weight: bold;
       cursor: pointer;
     }
-    button:hover { background-color: #2ea043; }
-    .my-id {
-      background-color: #0d1117;
-      padding: 8px;
-      border-radius: 6px;
-      font-family: monospace;
-      color: #7ee787;
-      word-break: break-all;
+    .btn-join { background-color: #238636; color: white; }
+    .btn-join:hover { background-color: #2ea043; }
+    .btn-leave { background-color: #da3633; color: white; display: none; }
+    .btn-leave:hover { background-color: #b62324; }
+    .status { margin-top: 15px; font-size: 14px; color: #8b949e; }
+    .online-badge {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      background-color: #3fb950;
+      border-radius: 50%;
+      margin-right: 5px;
     }
-    .status { margin-top: 10px; font-size: 13px; color: #8b949e; }
   </style>
 </head>
 <body>
 
   <div class="box">
-    <h2>Sesli Oda</h2>
-    
-    <p style="font-size: 13px;">Senin Bağlantı Kodun:</p>
-    <div class="my-id" id="my-id">Yükleniyor...</div>
+    <h2>🔊 Genel Ses Odası</h2>
+    <p style="font-size: 13px; color: #8b949e;">Linke sahip olan herkes bu odadadır.</p>
 
-    <hr style="border-color: #30363d; margin: 15px 0;">
+    <div class="status" id="status-text">Mikrofon izni bekleniyor...</div>
 
-    <input type="text" id="target-id" placeholder="Arkadaşının Kodunu Yapıştır">
-    <button id="connect-btn">Bağlan ve Konuş</button>
-
-    <div class="status" id="status">Mikrofon izni bekleniyor...</div>
+    <button id="action-btn" class="btn-join" disabled>Odaya Katıl</button>
   </div>
 
   <div id="audio-container"></div>
 
   <script>
-    let localStream;
-    let peer;
+    // Ortak Oda Kimliği (Bunu değiştirme, herkes aynı odaya bağlanır)
+    const ROOM_ID = "bizim-ozel-ses-odasi-github-2024";
+    
+    let localStream = null;
+    let peer = null;
+    let isConnected = false;
 
-    // 1. Mikrofon İzni Al
+    const statusText = document.getElementById('status-text');
+    const actionBtn = document.getElementById('action-btn');
+    const audioContainer = document.getElementById('audio-container');
+
+    // 1. Sayfa açılınca mikrofon erişimi iste
     navigator.mediaDevices.getUserMedia({ audio: true, video: false })
       .then(stream => {
         localStream = stream;
-        document.getElementById('status').innerText = "🟢 Mikrofon Aktif";
-        initPeer();
+        statusText.innerText = "🟢 Mikrofon Hazır";
+        actionBtn.disabled = false;
       })
       .catch(err => {
-        document.getElementById('status').innerText = "❌ Mikrofon İzni Reddedildi!";
+        statusText.innerText = "❌ Mikrofon izni vermelisiniz!";
+        console.error("Mikrofon hatası:", err);
       });
 
-    // 2. PeerJS Bağlantısını Başlat
-    function initPeer() {
+    // 2. Butona tıklandığında Odaya Gir / Çık yap
+    actionBtn.addEventListener('click', () => {
+      if (!isConnected) {
+        joinRoom();
+      } else {
+        leaveRoom();
+      }
+    });
+
+    function joinRoom() {
+      statusText.innerText = "Odaya bağlanıyor...";
+      
+      // Rastgele bağlantı ID'si ile Peer başlat
       peer = new Peer();
 
-      peer.on('open', id => {
-        document.getElementById('my-id').innerText = id;
-      });
+      peer.on('open', myId => {
+        isConnected = true;
+        statusText.innerHTML = '<span class="online-badge"></span> Odadasın (Ses Açık)';
+        actionBtn.innerText = "Odadan Ayrıl";
+        actionBtn.className = "btn-leave";
 
-      // Biri seni aradığında otomatik cevap ver ve sesini dinle
-      peer.on('call', call => {
-        call.answer(localStream);
-        handleStream(call);
+        // Odadaki başkalarını dinlemek için gelen aramaları otomatik kabul et
+        peer.on('call', call => {
+          call.answer(localStream);
+          handleStream(call);
+        });
+
+        // Odaya duyuru yap ve mevcut kişileri ara
+        connectToGroup();
       });
     }
 
-    // 3. Arkadaşının Kodunu Girip Bağlanma
-    document.getElementById('connect-btn').addEventListener('click', () => {
-      const targetId = document.getElementById('target-id').value.trim();
-      if (!targetId) return alert("Lütfen arkadaşının kodunu gir!");
+    function connectToGroup() {
+      // Odaya girince sabit odayı ara (bağlantı sinyali)
+      const call = peer.call(ROOM_ID, localStream);
+      if (call) {
+        handleStream(call);
+      }
+    }
 
-      document.getElementById('status').innerText = "Bağlanıyor...";
-      const call = peer.call(targetId, localStream);
-      handleStream(call);
-    });
-
-    // Gelen sesi oynatma fonksiyonu
     function handleStream(call) {
       call.on('stream', remoteStream => {
-        document.getElementById('status').innerText = "🔊 Bağlantı Kuruldu!";
-        const audio = document.createElement('audio');
+        // Gelen sesi otomatik oynat
+        let audio = document.createElement('audio');
         audio.srcObject = remoteStream;
         audio.autoplay = true;
-        document.getElementById('audio-container').appendChild(audio);
+        audioContainer.appendChild(audio);
       });
+    }
+
+    function leaveRoom() {
+      if (peer) peer.destroy();
+      location.reload(); // Sayfayı yenileyerek odadan çık
     }
   </script>
 </body>
