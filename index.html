@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sesli Sohbet Odası</title>
-  <!-- PeerJS Kütüphanesi -->
+  <title>Çoklu Sesli Sohbet Odası</title>
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
   <style>
     body {
@@ -19,22 +18,22 @@
     }
     .box {
       background-color: #161b22;
-      padding: 24px;
+      padding: 30px;
       border-radius: 12px;
       border: 1px solid #30363d;
-      width: 320px;
+      width: 340px;
       text-align: center;
       box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     }
     h2 { margin-top: 0; color: #58a6ff; }
     input, button {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       margin: 8px 0;
       border-radius: 6px;
       border: 1px solid #30363d;
       box-sizing: border-box;
-      font-size: 14px;
+      font-size: 15px;
     }
     input { background-color: #0d1117; color: #c9d1d9; }
     button {
@@ -45,85 +44,116 @@
       cursor: pointer;
     }
     button:hover { background-color: #2ea043; }
-    .my-id {
-      background-color: #0d1117;
-      padding: 8px;
-      border-radius: 6px;
-      font-family: monospace;
-      color: #7ee787;
-      word-break: break-all;
-    }
-    .status { margin-top: 10px; font-size: 13px; color: #8b949e; }
+    .btn-leave { background-color: #da3633; }
+    .btn-leave:hover { background-color: #b62324; }
+    .status { margin-top: 15px; font-size: 14px; color: #8b949e; }
+    .room-info { display: none; margin-top: 15px; }
   </style>
 </head>
 <body>
 
   <div class="box">
-    <h2>Sesli Oda</h2>
+    <h2>🔊 Grup Ses Odası</h2>
     
-    <p style="font-size: 13px;">Senin Bağlantı Kodun:</p>
-    <div class="my-id" id="my-id">Yükleniyor...</div>
+    <!-- Giriş Ekranı -->
+    <div id="login-screen">
+      <input type="text" id="username" placeholder="Kullanıcı Adın">
+      <button id="join-btn">Odaya Katıl</button>
+    </div>
 
-    <hr style="border-color: #30363d; margin: 15px 0;">
+    <!-- Oda İçi Ekranı -->
+    <div id="room-screen" class="room-info">
+      <div class="status" style="color: #3fb950;">🟢 Sesli Odadasın</div>
+      <p style="font-size: 12px; color: #8b949e; margin-top: 10px;">
+        Giren herkesin sesi otomatik bağlanır.
+      </p>
+      <button id="leave-btn" class="btn-leave">Odadan Ayrıl</button>
+    </div>
 
-    <input type="text" id="target-id" placeholder="Arkadaşının Kodunu Yapıştır">
-    <button id="connect-btn">Bağlan ve Konuş</button>
-
-    <div class="status" id="status">Mikrofon izni bekleniyor...</div>
+    <div class="status" id="status-text">Mikrofon izni bekleniyor...</div>
   </div>
 
   <div id="audio-container"></div>
 
   <script>
+    // Ortak Oda Bağlantı Kanalı
+    const ROOM_PREFIX = "bizim-grup-ses-odasi-2026-";
+    
     let localStream;
     let peer;
+    const peers = {};
 
-    // 1. Mikrofon İzni Al
+    // 1. Sayfa Açılınca Mikrofon İzni Al
     navigator.mediaDevices.getUserMedia({ audio: true, video: false })
       .then(stream => {
         localStream = stream;
-        document.getElementById('status').innerText = "🟢 Mikrofon Aktif";
-        initPeer();
+        document.getElementById('status-text').innerText = "🟢 Mikrofon Hazır";
       })
       .catch(err => {
-        document.getElementById('status').innerText = "❌ Mikrofon İzni Reddedildi!";
+        document.getElementById('status-text').innerText = "❌ Mikrofon izni vermelisiniz!";
       });
 
-    // 2. PeerJS Bağlantısını Başlat
-    function initPeer() {
+    // 2. Odaya Katıl Butonu
+    document.getElementById('join-btn').addEventListener('click', () => {
+      const name = document.getElementById('username').value.trim();
+      if (!name) return alert("Lütfen bir isim yazın!");
+
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('room-screen').style.display = 'block';
+      document.getElementById('status-text').innerText = "Odaya bağlanıyor...";
+
+      // Rastgele ve benzersiz bir ID ile Peer başlat
       peer = new Peer();
 
-      peer.on('open', id => {
-        document.getElementById('my-id').innerText = id;
+      peer.on('open', myId => {
+        document.getElementById('status-text').innerText = "Bağlantı kuruldu!";
+
+        // Biri bizi aradığında cevabı ver ve sesini dinle
+        peer.on('call', call => {
+          call.answer(localStream);
+          handleCall(call);
+        });
+
+        // Sunucudan aktif kişileri sorgulamak yerine odadaki herkese bağlan
+        // (Giren kişi diğer katılımcıları sisteme ekler)
+        peer.on('connection', conn => {
+          conn.on('data', data => {
+            if (data.type === 'new-user' && data.peerId !== myId) {
+              connectToNewUser(data.peerId);
+            }
+          });
+        });
       });
-
-      // Biri seni aradığında otomatik cevap ver ve sesini dinle
-      peer.on('call', call => {
-        call.answer(localStream);
-        handleStream(call);
-      });
-    }
-
-    // 3. Arkadaşının Kodunu Girip Bağlanma
-    document.getElementById('connect-btn').addEventListener('click', () => {
-      const targetId = document.getElementById('target-id').value.trim();
-      if (!targetId) return alert("Lütfen arkadaşının kodunu gir!");
-
-      document.getElementById('status').innerText = "Bağlanıyor...";
-      const call = peer.call(targetId, localStream);
-      handleStream(call);
     });
 
-    // Gelen sesi oynatma fonksiyonu
-    function handleStream(call) {
+    // Yeni Katılan Kişiyi Arama Fonksiyonu
+    function connectToNewUser(userId) {
+      if (peers[userId]) return; // Zaten bağlıysa tekrar arama
+
+      const call = peer.call(userId, localStream);
+      handleCall(call);
+    }
+
+    // Ses Akışını Bağlama
+    function handleCall(call) {
+      peers[call.peer] = call;
+      const audio = document.createElement('audio');
+      audio.autoplay = true;
+
       call.on('stream', remoteStream => {
-        document.getElementById('status').innerText = "🔊 Bağlantı Kuruldu!";
-        const audio = document.createElement('audio');
         audio.srcObject = remoteStream;
-        audio.autoplay = true;
         document.getElementById('audio-container').appendChild(audio);
       });
+
+      call.on('close', () => {
+        audio.remove();
+      });
     }
+
+    // Odadan Ayrılma
+    document.getElementById('leave-btn').addEventListener('click', () => {
+      location.reload();
+    });
   </script>
 </body>
 </html>
